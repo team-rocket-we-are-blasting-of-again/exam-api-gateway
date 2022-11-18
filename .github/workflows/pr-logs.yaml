@@ -1,0 +1,90 @@
+name: PR Logs
+on: pull_request
+
+jobs:
+  logs:
+    name: PR Logs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup env
+        uses: ./.github/actions/setup-env
+
+      - name: Build Jacoco report
+        run: mvn verify jacoco:report
+
+      - name: Build PMD report
+        run: mvn compile site
+
+      - name: Echo Jacoco report
+        id: jacoco
+        run: |
+          report=$(cat target/site/jacoco/index.html)
+          echo "report=$report" >> $GITHUB_OUTPUT
+
+      - name: Echo PMD report
+        id: pmd
+        run: |
+          report=$(cat target/site/pmd.html)
+          echo "report<<EOF" >> $GITHUB_OUTPUT
+          echo "$report" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Send reports to PR comment
+        uses: actions/github-script@v6
+        env:
+          JACOCO: "${{ steps.jacoco.outputs.report }}"
+          PMD: "pmd\n${{ steps.pmd.outputs.report }}"
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // 1. Retrieve existing bot comments for the PR
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            })
+            const botComment = comments.find(comment => {
+              return comment.user.type === 'Bot' && comment.body.includes('Jacoco Report')
+            })
+
+            // 2. Prepare format of the comment
+            const output = `
+            <details><summary>Jacoco Report</summary>
+
+            ---
+            ${process.env.JACOCO}
+            ---
+
+            </details>
+
+            <details><summary>PMD Report</summary>
+
+            ---
+            ${process.env.PMD}
+            ---
+
+            </details>
+
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.WORKING_DIR }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            // 3. If we have a comment, update it, otherwise create a new one
+            if (botComment) {
+              github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: output
+              })
+            } else {
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: output
+              })
+            }
+
