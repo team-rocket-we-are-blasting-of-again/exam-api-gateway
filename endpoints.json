@@ -5,7 +5,7 @@
     {
       "path": "/order/restaurant/**",
       "method": "BEARER",
-      "appRoles": [
+      "rolesAllowed": [
         "RESTAURANT"
       ]
     }
