@@ -7,8 +7,8 @@ import reactor.core.publisher.Mono;
 
 public interface RoutePathAppRoleRepository extends R2dbcRepository<RoutePathAppRole, Long> {
 
-    Mono<RoutePathAppRole> findRoutePathAppRoleByAppRoleIdAndRoutePathId(Long appRoleId, Long routePathId);
-
     Flux<RoutePathAppRole> findRoutePathAppRoleByRoutePathId(Long routePathId);
+
+    Flux<RoutePathAppRole> deleteAllByRoutePathId(Long routePathId);
 
 }

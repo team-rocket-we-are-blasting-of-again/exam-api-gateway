@@ -70,10 +70,7 @@ public class SecurityFilterImpl {
             )
             .switchIfEmpty(Mono.error(new UnknownRouteException()))
             .flatMap(exchangeOptional -> exchangeOptional
-                .map(serverWebExchange -> {
-                    System.out.println(serverWebExchange);
-                    return chain.filter(serverWebExchange);
-                })
+                .map(chain::filter)
                 .orElse(Mono.error(new UnauthorizedException()))
             );
     }

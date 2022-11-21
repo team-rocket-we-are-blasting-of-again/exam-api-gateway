@@ -33,19 +33,4 @@ public class RoutePath {
     @Column("gateway_route_id")
     private Long gatewayRouteId;
 
-    public static List<RoutePath> fromList(List<RoutePathDto> routePathList) {
-        return routePathList
-            .stream()
-            .map(RoutePath::fromDto)
-            .collect(Collectors.toList());
-    }
-
-    public static RoutePath fromDto(RoutePathDto routePath) {
-        return RoutePath.builder()
-            .id(routePath.getId())
-            .path(routePath.getPath())
-            .method(routePath.getMethod().toString())
-            .build();
-    }
-
 }

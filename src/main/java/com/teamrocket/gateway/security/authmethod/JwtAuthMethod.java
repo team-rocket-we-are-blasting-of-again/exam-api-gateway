@@ -16,7 +16,7 @@ public class JwtAuthMethod implements AuthMethod {
     public Optional<Integer> authenticate(String token, RoutePathDto routePathDto) {
         // TODO: Call auth service
         // TODO: Check if the found role is allowed on that route
-        return Optional.empty();
+        return Optional.of(1);
     }
 
 }

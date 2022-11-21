@@ -1,7 +1,5 @@
 package com.teamrocket.gateway.service.impl;
 
-import com.teamrocket.gateway.repository.GatewayRouteRepository;
-import com.teamrocket.gateway.security.util.RouteRequestMatcher;
 import com.teamrocket.gateway.dto.GatewayRouteDto;
 import com.teamrocket.gateway.dto.RoutePathDto;
 import com.teamrocket.gateway.entity.AppRole;
@@ -9,11 +7,14 @@ import com.teamrocket.gateway.entity.GatewayRoute;
 import com.teamrocket.gateway.entity.RoutePath;
 import com.teamrocket.gateway.entity.RoutePathAppRole;
 import com.teamrocket.gateway.repository.AppRoleRepository;
+import com.teamrocket.gateway.repository.GatewayRouteRepository;
 import com.teamrocket.gateway.repository.RoutePathAppRoleRepository;
 import com.teamrocket.gateway.repository.RoutePathRepository;
+import com.teamrocket.gateway.security.util.RouteRequestMatcher;
 import com.teamrocket.gateway.service.GatewayRouteService;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +32,10 @@ public class GatewayRouteServiceImpl implements GatewayRouteService {
     private final RoutePathRepository routePathRepository;
     private final AppRoleRepository appRoleRepository;
     private final RoutePathAppRoleRepository routePathAppRoleRepository;
+
+    private final RoutePathService routePathService;
+    private final RoutePathAppRoleService routePathAppRoleService;
+
     private List<GatewayRouteDto> gatewayRouteDtoList;
 
     @Override
@@ -66,43 +71,44 @@ public class GatewayRouteServiceImpl implements GatewayRouteService {
     @Transactional
     public Flux<Boolean> ensureGatewayRoute(GatewayRouteDto gatewayRouteDto) {
         return Mono.just(gatewayRouteDto)
-            .flatMapMany(this::saveRoute)
+            .flatMapMany(this::editIfNeeded)
             .switchIfEmpty(Mono.just(false));
     }
 
-    private Flux<Boolean> saveRoute(GatewayRouteDto gatewayRouteDto) {
-        return gatewayRouteRepository.save(GatewayRoute.fromDto(gatewayRouteDto))
+    private Flux<Boolean> editIfNeeded(GatewayRouteDto gatewayRouteDto) {
+        return updateOrCreateGatewayRoute(gatewayRouteDto)
+            .flatMap(gatewayRoute -> routePathRepository.deleteAllByGatewayRouteId(gatewayRoute.getId())
+                .collectList()
+                .flatMap(unused -> Mono.just(gatewayRoute)))
             .zipWith(Mono.just(gatewayRouteDto.getRoutePathDto()))
             .flatMapMany(objects -> {
                 GatewayRoute gatewayRoute = objects.getT1();
                 List<RoutePathDto> routePathDtos = objects.getT2();
                 Flux<Boolean> voidFlux = Flux.empty();
                 for (RoutePathDto routePathDto : routePathDtos) {
-                    Flux<Boolean> result = routePathRepository.save(toRoutePath(gatewayRoute, routePathDto))
+                    Flux<Boolean> result = routePathService.createRoutePath(gatewayRoute, routePathDto)
                         .zipWith(Mono.just(routePathDto))
                         .map(tuple2 -> tuple2.getT2()
                             .getRolesAllowed()
                             .stream()
-                            .map(role -> appRoleRepository.findAppRoleByRole(role.toString()))
-                            .map(appRoleMono -> appRoleMono.zipWith(Mono.just(tuple2.getT1())))
+                            .map(role -> appRoleRepository.findAppRoleByRole(role.toString())
+                                .zipWith(Mono.just(tuple2.getT1())))
                             .collect(Collectors.toList()))
                         .flatMapMany(Flux::fromIterable)
                         .flatMap(appRoleMono -> appRoleMono)
-                        .map(tuple2 -> {
-                            AppRole appRole = tuple2.getT1();
-                            RoutePath path = tuple2.getT2();
-                            return routePathAppRoleRepository.findRoutePathAppRoleByAppRoleIdAndRoutePathId(
-                                    appRole.getId(),
-                                    path.getId()
-                                )
-                                .switchIfEmpty(Mono.just(toRoutePathAppRole(appRole, path)))
-                                .flatMap(routePathAppRole -> {
-                                    routePathAppRole.setRoutePathId(path.getId());
-                                    routePathAppRole.setAppRoleId(appRole.getId());
-                                    return routePathAppRoleRepository.save(routePathAppRole);
-                                });
+                        .collectList()
+                        .flatMapMany(tuple2List -> {
+                            if (tuple2List.isEmpty()) {
+                                return Mono.just(true);
+                            }
+                            RoutePath routePath = tuple2List.get(0).getT2();
+                            List<AppRole> appRoles = tuple2List
+                                .stream()
+                                .map(Tuple2::getT1)
+                                .collect(Collectors.toList());
+                            return routePathAppRoleService.updateOrCreateRoutePathAppRole(routePath, appRoles);
                         })
-                        .flatMap(routePathAppRoleMono -> routePathAppRoleMono)
+                        .map(o -> o)
                         .flatMap(unused -> Mono.just(true));
 
                     voidFlux = Flux.concat(voidFlux, result);
@@ -111,19 +117,24 @@ public class GatewayRouteServiceImpl implements GatewayRouteService {
             });
     }
 
-    private static RoutePathAppRole toRoutePathAppRole(AppRole appRole, RoutePath path) {
-        return RoutePathAppRole.builder()
-            .appRoleId(appRole.getId())
-            .routePathId(path.getId())
-            .build();
-    }
-
-    private static RoutePath toRoutePath(GatewayRoute gatewayRoute, RoutePathDto routePathDto) {
-        return RoutePath.builder()
-            .gatewayRouteId(gatewayRoute.getId())
-            .path(routePathDto.getPath())
-            .method(routePathDto.getMethod().toString())
-            .build();
+    private Mono<GatewayRoute> updateOrCreateGatewayRoute(GatewayRouteDto gatewayRouteDto) {
+        return gatewayRouteRepository.findGatewayRouteByRequestPath(gatewayRouteDto.getRequestPath())
+            .map(Optional::of)
+            .defaultIfEmpty(Optional.empty())
+            .flatMap(gatewayRoute -> {
+                if (gatewayRoute.isEmpty()) {
+                    return gatewayRouteRepository.save(GatewayRoute.fromDto(gatewayRouteDto));
+                }
+                return Mono.just(gatewayRoute.get());
+            })
+            .zipWith(Mono.just(gatewayRouteDto))
+            .flatMap(objects -> {
+                GatewayRoute route = objects.getT1();
+                GatewayRouteDto routeDto = objects.getT2();
+                return gatewayRouteRepository.updateForwardUri(route.getId(), routeDto.getForwardUri())
+                    .zipWith(Mono.just(route.getId()))
+                    .flatMap(tuple2 -> gatewayRouteRepository.findById(tuple2.getT2()));
+            });
     }
 
     @Override
