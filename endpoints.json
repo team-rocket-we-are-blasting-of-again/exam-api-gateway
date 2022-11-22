@@ -1,0 +1,13 @@
+{
+  "requestPath": "/order/**",
+  "forwardUri": "http://order:8080",
+  "routePathDto": [
+    {
+      "path": "/order/restaurant/**",
+      "method": "BEARER",
+      "rolesAllowed": [
+        "RESTAURANT"
+      ]
+    }
+  ]
+}
