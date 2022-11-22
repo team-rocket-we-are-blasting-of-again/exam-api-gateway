@@ -5,6 +5,7 @@ import static com.teamrocket.gateway.Constants.CATCH_ALL_FALLBACK;
 import com.teamrocket.gateway.dto.GatewayRouteDto;
 import com.teamrocket.gateway.service.GatewayRouteService;
 import com.teamrocket.gateway.service.KafkaService;
+import java.util.List;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,8 +23,9 @@ public class GatewayController {
     private final KafkaService kafkaService;
 
     @PostMapping("/gateway/ensure-route")
-    public Flux<Boolean> createGatewayRoute(@RequestBody @Valid GatewayRouteDto gatewayRouteDto) {
-        return gatewayRouteService.ensureGatewayRoute(gatewayRouteDto)
+    public Flux<Boolean> createGatewayRoute(@RequestBody @Valid List<GatewayRouteDto> gatewayRouteDtos) {
+        return Flux.fromIterable(gatewayRouteDtos)
+            .flatMap(gatewayRouteService::ensureGatewayRoute)
             .doOnComplete(() -> kafkaService.send("routeUpdate", ""));
     }
 
