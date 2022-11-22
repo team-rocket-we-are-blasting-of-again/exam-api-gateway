@@ -1,9 +1,10 @@
-package com.teamrocket.gateway.controller;
+package com.teamrocket.gateway.application.controller;
 
 import static com.teamrocket.gateway.Constants.CATCH_ALL_FALLBACK;
 
 import com.teamrocket.gateway.dto.GatewayRouteDto;
 import com.teamrocket.gateway.service.GatewayRouteService;
+import com.teamrocket.gateway.service.KafkaService;
 import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,12 @@ import reactor.core.publisher.Flux;
 public class GatewayController {
 
     private final GatewayRouteService gatewayRouteService;
+    private final KafkaService kafkaService;
 
     @PostMapping("/gateway/ensure-route")
     public Flux<Boolean> createGatewayRoute(@RequestBody @Valid GatewayRouteDto gatewayRouteDto) {
-        return gatewayRouteService.ensureGatewayRoute(gatewayRouteDto);
+        return gatewayRouteService.ensureGatewayRoute(gatewayRouteDto)
+            .doOnComplete(() -> kafkaService.send("routeUpdate", ""));
     }
 
     @GetMapping("/gateway/route")
