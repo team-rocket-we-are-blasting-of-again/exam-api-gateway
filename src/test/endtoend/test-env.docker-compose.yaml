@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    networks:
+      gateway:
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+    networks:
+      gateway:
+  gateway-postgres:
+    container_name: postgres
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    networks:
+      gateway:
+  gateway:
+    container_name: gateway
+    image: tobiaszimmer/exam-api-gateway:${GATEWAY_TAG}
+    ports:
+      - "8080:8082"
+    environment:
+      GATEWAY_USER_ID_HEADER: user_id
+      GATEWAY_DB_URL: r2dbc:postgresql://gateway-postgres:5432/postgres
+      GATEWAY_DB_USERNAME: postgres
+      GATEWAY_DB_PASSWORD: postgres
+      GATEWAY_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      GATEWAY_FLYWAY_URL: jdbc:postgresql://gateway-postgres:5432/postgres
+      GATEWAY_FLYWAY_USERNAME: postgres
+      GATEWAY_FLYWAY_PASSWORD: postgres
+    networks:
+      gateway:
+
+networks:
+  gateway:
+
+volumes:
+  zookeeper_data:
+  kafka_data:
