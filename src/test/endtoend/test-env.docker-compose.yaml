@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   zookeeper:
+    container_name: zookeeper
     image: bitnami/zookeeper:latest
     ports:
       - "2181:2181"
@@ -10,6 +11,7 @@ services:
     networks:
       gateway:
   kafka:
+    container_name: kafka
     image: bitnami/kafka:latest
     ports:
       - "9092:9092"
@@ -18,26 +20,29 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
       KAFKA_LISTENERS: PLAINTEXT://:9092
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       ALLOW_PLAINTEXT_LISTENER: "yes"
     networks:
       gateway:
   gateway-postgres:
-    container_name: postgres
+    container_name: gateway-postgres
     image: postgres:latest
-    ports:
-      - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     networks:
       gateway:
   gateway:
+    depends_on:
+      - kafka
+      - zookeeper
+      - gateway-postgres
     container_name: gateway
     image: tobiaszimmer/exam-api-gateway:${GATEWAY_TAG}
     ports:
-      - "8080:8082"
+      - "8080:8080"
     environment:
+      SERVER_PORT: 8080
       GATEWAY_USER_ID_HEADER: user_id
       GATEWAY_DB_URL: r2dbc:postgresql://gateway-postgres:5432/postgres
       GATEWAY_DB_USERNAME: postgres
@@ -46,11 +51,14 @@ services:
       GATEWAY_FLYWAY_URL: jdbc:postgresql://gateway-postgres:5432/postgres
       GATEWAY_FLYWAY_USERNAME: postgres
       GATEWAY_FLYWAY_PASSWORD: postgres
+      GATEWAY_USERNAME: bob
+      GATEWAY_PASSWORD: thebuilder
     networks:
       gateway:
 
 networks:
   gateway:
+    external: true
 
 volumes:
   zookeeper_data:
