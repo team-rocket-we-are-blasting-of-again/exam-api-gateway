@@ -5,11 +5,12 @@ runs:
   using: composite
   steps:
     # Uncomment if you are using a docker compose to setup your environment
-    # - name: Setup environment
-    #   shell: bash
-    #   run: |
-    #     docker-compose up -d
-    #     sleep 5
+    - name: Setup environment
+      shell: bash
+      run: |
+        docker-compose up -d
+        docker-compose -f kafka.docker-compose.yaml up -d
+        sleep 5
 
     - name: Set up JDK 17
       uses: actions/setup-java@v3
