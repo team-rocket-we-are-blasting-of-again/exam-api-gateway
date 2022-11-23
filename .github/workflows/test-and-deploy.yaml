@@ -45,10 +45,11 @@ jobs:
           pom_xml='pom.xml'
           version=$(get_xpath_value $pom_xml 'project/version')
           lower_case_image=$(echo $IMAGE_NAME | awk '{print tolower($0)}')
+          branch_name=$(echo $GITHUB_REF | cut -d'/' -f 3 | tr / -)
           echo "project_version=$version" >> $GITHUB_ENV
           echo "lower_case_image=$lower_case_image" >> $GITHUB_ENV
-          echo "branch_name=$(echo $GITHUB_REF | cut -d'/' -f 3 | tr / -)" >> $GITHUB_ENV
-          echo "image=$lower_case_image:$branch_name-$project_version" >> $GITHUB_ENV
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
+          echo "image=$lower_case_image:$branch_name-$version" >> $GITHUB_ENV
         env:
           IMAGE_NAME: ${{ env.DOCKER_USERNAME }}/${{ github.event.repository.name }}
 
