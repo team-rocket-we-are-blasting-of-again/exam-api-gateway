@@ -62,7 +62,7 @@ jobs:
         shell: bash
         run: |
           docker compose down
-          docker compose -f kafka.docker-compose.down
+          docker compose -f kafka.docker-compose.yaml down
           . src/test/endtoend/run.sh
         env:
           GATEWAY_TAG: ${{ env.branch_name }}-${{ env.project_version }}

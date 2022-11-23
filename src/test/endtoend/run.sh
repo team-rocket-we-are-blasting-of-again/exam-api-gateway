@@ -4,8 +4,6 @@ test_fail="false"
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 start() {
-    export
-
     docker network create gateway
     docker compose -f "$script_dir/test-env.docker-compose.yaml" up -d --build
     sleep 5
