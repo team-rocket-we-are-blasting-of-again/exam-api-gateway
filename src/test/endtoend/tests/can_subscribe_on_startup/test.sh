@@ -12,13 +12,13 @@ get_all_routes() {
 
 get_all_routes | {
     read -r body
+    echo "response body: $body"
     case $body in
     *http://customer:8080*)
-        exit
+        exit 0
         ;;
     *)
-        echo "error"
-        exit
+        exit 1
         ;;
     esac
 }

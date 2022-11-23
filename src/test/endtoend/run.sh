@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-test_fail="false"
+test_fails=""
 script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 start() {
@@ -23,16 +23,13 @@ for test_dir in "$script_dir"/tests/*; do
     test_name=$(basename "$test_dir")
     echo "testing: $test_name"
     start "$test_dir/docker-compose.yaml"
-
-    result=$(. "$test_dir/test.sh")
-    if [ "$result" = "error" ]; then
-        echo "failed '$test_name'"
-        test_fail="true"
+    if ! . "$test_dir/test.sh"; then
+        test_fails+="\n$test_name"
     fi
-
     stop "$test_dir/docker-compose.yaml"
 done
 
-if [ "$test_fail" = "true" ]; then
+if [ "$test_fails" != "" ]; then
+    echo "failed tests: $test_fails"
     exit 1
 fi
