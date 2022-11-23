@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
+test_fail="false"
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
 start() {
     export
 
     docker network create gateway
-    docker compose -f test-env.docker-compose.yaml up -d --build
+    docker compose -f "$script_dir/test-env.docker-compose.yaml" up -d --build
     sleep 5
     docker compose -f "$1" up -d --build
 
@@ -13,14 +16,10 @@ start() {
 }
 
 stop() {
-    docker compose -f test-env.docker-compose.yaml down
+    docker compose -f "$script_dir/test-env.docker-compose.yaml" down
     docker compose -f "$1" down
     docker network rm gateway
 }
-
-test_fail="false"
-
-script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 for test_dir in "$script_dir"/tests/*; do
     test_name=$(basename "$test_dir")
