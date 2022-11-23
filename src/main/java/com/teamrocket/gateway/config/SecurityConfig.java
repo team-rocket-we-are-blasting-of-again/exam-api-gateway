@@ -15,6 +15,7 @@ public class SecurityConfig {
         return http.authorizeExchange()
             .anyExchange().permitAll()
             .and().csrf().disable()
+            .cors().disable()
             .build();
     }
 }
