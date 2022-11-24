@@ -1,0 +1,19 @@
+syntax= "proto3";
+
+package com.teamrocket;
+
+option java_multiple_files = true;
+
+service Verify {
+  rpc VerifyUser (VerifyUserRequest) returns (VerifyUserResponse);
+}
+
+message VerifyUserRequest {
+  string jwt = 1;
+}
+
+message VerifyUserResponse {
+  bool verified = 1;
+  uint32 userId = 2;
+  string userRole = 3;
+}
