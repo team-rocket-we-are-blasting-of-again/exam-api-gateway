@@ -52,6 +52,7 @@ jobs:
           echo "branch_name=$branch_name" >> $GITHUB_ENV
           echo "image=$image" >> $GITHUB_ENV
           echo "prometheus_image=$image-prometheus" >> $GITHUB_ENV
+          echo "grafana_image=$image-grafana" >> $GITHUB_ENV
         env:
           IMAGE_NAME: ${{ env.DOCKER_USERNAME }}/${{ github.event.repository.name }}
 
@@ -61,6 +62,8 @@ jobs:
           docker build --tag "$image" .
           cd prometheus
           docker build --tag "$prometheus_image" -f prometheus.Dockerfile .
+          cd ../grafana
+          docker build --tag "$grafana_image" -f grafana.Dockerfile .
 
       - name: Run End To End tests
         shell: bash
@@ -77,6 +80,7 @@ jobs:
           echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin
           docker push "$image"
           docker push "$prometheus_image"
+          docker push "$grafana_image"
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 

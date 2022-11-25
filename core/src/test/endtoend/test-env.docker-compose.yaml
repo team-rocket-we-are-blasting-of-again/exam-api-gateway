@@ -58,13 +58,20 @@ services:
     depends_on:
       - gateway
     container_name: prometheus
-    image: tobiaszimmer/exam-api-gateway:${GATEWAY_TAG}-prometheus
-    ports:
-      - "9090:9090"
+    image: tobiaszimmer/pro-test:latest
     environment:
       GATEWAY_HOST: gateway:8080
       USERNAME: bob
       PASSWORD: thebuilder
+    networks:
+      gateway:
+  grafana:
+    depends_on:
+      - prometheus
+    container_name: grafana
+    image: tobiaszimmer/grafana-test:latest
+    ports:
+      - "3000:3000"
     networks:
       gateway:
 
