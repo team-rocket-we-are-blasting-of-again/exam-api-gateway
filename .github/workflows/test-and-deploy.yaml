@@ -59,7 +59,8 @@ jobs:
         shell: bash
         run: |
           docker build --tag "$image" .
-          docker build --tag "$prometheus_image" -f prometheus.Dockerfile prometheus
+          cd prometheus
+          docker build --tag "$prometheus_image" -f prometheus.Dockerfile .
 
       - name: Run End To End tests
         shell: bash
