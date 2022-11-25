@@ -5,6 +5,8 @@ import com.teamrocket.VerifyUserRequest;
 import com.teamrocket.VerifyUserResponse;
 import com.teamrocket.core.dto.RoutePathDto;
 import com.teamrocket.core.security.util.VerifiedUser;
+import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 import java.util.Optional;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
@@ -22,18 +24,18 @@ public class JwtAuthMethod implements AuthMethod {
 
     @Override
     public Optional<VerifiedUser> authenticate(String token, RoutePathDto routePathDto) {
-        VerifyUserResponse verifyUserResponse = blockingAuthClient.verifyUser(createRequest(token));
+        try {
+            VerifyUserResponse verifyUserResponse = blockingAuthClient.verifyUser(createRequest(token));
 
-        // The token that was provided was invalid
-        if (!verifyUserResponse.getVerified()) {
+            return routePathDto.getRolesAllowed()
+                .stream()
+                .filter(role -> role.toString().equals(verifyUserResponse.getUserRole()))
+                .map(role -> new VerifiedUser(verifyUserResponse.getUserId(), role.toString()))
+                .findFirst();
+
+        } catch (StatusRuntimeException e) {
             return Optional.empty();
         }
-
-        return routePathDto.getRolesAllowed()
-            .stream()
-            .filter(role -> role.toString().equals(verifyUserResponse.getUserRole()))
-            .map(role -> new VerifiedUser(verifyUserResponse.getUserId(), role.toString()))
-            .findFirst();
     }
 
     private static VerifyUserRequest createRequest(String token) {

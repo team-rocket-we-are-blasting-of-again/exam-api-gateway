@@ -1,0 +1,13 @@
+[
+  {
+    "requestPath": "/prometheus/**",
+    "forwardUri": "http://prometheus:9090",
+    "routePathDto": [
+      {
+        "path": "/prometheus/**",
+        "method": "NONE",
+        "rolesAllowed": []
+      }
+    ]
+  }
+]
