@@ -7,7 +7,6 @@ COPY --from=builder /usr/local/bin/subscribe /usr/local/bin/subscribe
 COPY gateway-routes.json /gateway-routes.json
 COPY start-prometheus.sh /usr/local/bin/start-prometheus.sh
 
-RUN chmod +x /usr/local/bin/subscribe
 RUN chmod +x /usr/local/bin/start-prometheus.sh
 
 ENV GATEWAY_HOST gateway:8080
