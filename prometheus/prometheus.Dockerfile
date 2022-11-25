@@ -13,4 +13,4 @@ ENV PASSWORD thebuilder
 
 # Remove the default prometheus entrypoint
 ENTRYPOINT []
-CMD [ "sh /start-prometheus.sh" ]
+CMD [ "sh", "/start-prometheus.sh" ]
