@@ -10,6 +10,8 @@ get_all_routes() {
         --header 'Accept: application/json'
 }
 
+sleep 10
+
 get_all_routes | {
     read -r body
     echo "response body: $body"
