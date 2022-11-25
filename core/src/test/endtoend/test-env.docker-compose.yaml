@@ -54,6 +54,19 @@ services:
       GATEWAY_PASSWORD: thebuilder
     networks:
       gateway:
+  prometheus:
+    depends_on:
+      - gateway
+    container_name: prometheus
+    image: tobiaszimmer/exam-api-gateway:${GATEWAY_TAG}-prometheus
+    ports:
+      - "9090:9090"
+    environment:
+      GATEWAY_HOST: gateway:8080
+      USERNAME: bob
+      PASSWORD: thebuilder
+    networks:
+      gateway:
 
 networks:
   gateway:
