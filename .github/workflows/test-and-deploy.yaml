@@ -46,10 +46,12 @@ jobs:
           version=$(get_xpath_value $pom_xml 'project/version')
           lower_case_image=$(echo $IMAGE_NAME | awk '{print tolower($0)}')
           branch_name=$(echo $GITHUB_REF | cut -d'/' -f 3 | tr / -)
+          image="$lower_case_image:$branch_name-$version"
           echo "project_version=$version" >> $GITHUB_ENV
           echo "lower_case_image=$lower_case_image" >> $GITHUB_ENV
           echo "branch_name=$branch_name" >> $GITHUB_ENV
-          echo "image=$lower_case_image:$branch_name-$version" >> $GITHUB_ENV
+          echo "image=$image" >> $GITHUB_ENV
+          echo "prometheus_image=$image-prometheus" >> $GITHUB_ENV
         env:
           IMAGE_NAME: ${{ env.DOCKER_USERNAME }}/${{ github.event.repository.name }}
 
@@ -57,9 +59,7 @@ jobs:
         shell: bash
         run: |
           docker build --tag "$image" .
-          docker build --tag "$PROMETHEUS_IMAGE" -f prometheus.Dockerfile prometheus
-        env:
-          PROMETHEUS_IMAGE: ${{ env.lowercase_image }}:${{ env.branch_name }}-${{ env.project_version }}-prometheus
+          docker build --tag "$prometheus_image" -f prometheus.Dockerfile prometheus
 
       - name: Run End To End tests
         shell: bash
@@ -75,6 +75,7 @@ jobs:
         run: |
           echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin
           docker push "$image"
+          docker push "$prometheus_image"
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
