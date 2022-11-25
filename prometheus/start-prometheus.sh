@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-/usr/local/bin/subscribe
+subscribe
 /bin/prometheus \
     --config.file=/etc/prometheus/prometheus.yml \
     --storage.tsdb.path=/prometheus \
