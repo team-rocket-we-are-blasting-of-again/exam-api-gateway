@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest.Builder;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ import reactor.util.function.Tuple2;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class SecurityFilterImpl {
 
     private static final String USER_HEADER = "user_id";
@@ -41,6 +43,9 @@ public class SecurityFilterImpl {
             .build()
             .getHeaders();
 
+        String requestPath = exchange.getRequest().getPath().pathWithinApplication().value();
+        log.info("Request: '{}'", requestPath);
+
         RouteRequestMatcher routeRequestMatcher = new RouteRequestMatcher(exchange);
         return getAuthHeader(headers)
             // If the request does not require a token it will go through but if it does the token is invalid
@@ -56,18 +61,30 @@ public class SecurityFilterImpl {
                         return Optional.of(exchange);
                     }
 
+                    String path = foundAuthRoute.routePathDto().getPath();
                     if (authStatus.equals(AuthStatus.INVALID_METHOD)) {
+                        log.info("Invalid auth method used: '{}' on path '{}'", path, foundAuthRoute.routePathDto().getMethod());
                         return Optional.<ServerWebExchange>empty();
                     }
 
                     AuthDto authDto = tuple.getT2();
-                    Optional<VerifiedUser> user = authDto.authMethod.authenticate(authDto.token(), foundAuthRoute.routePathDto());
+                    String token = authDto.token();
+                    Optional<VerifiedUser> user = authDto.authMethod.authenticate(token, foundAuthRoute.routePathDto());
 
                     if (user.isEmpty()) {
+                        log.info("Invalid auth token provided: '{}' for path '{}'", token, path);
                         return Optional.<ServerWebExchange>empty();
                     }
 
-                    ServerWebExchange exchangeWithUserId = exchange.mutate().request(withUserHeaders(user.get())).build();
+                    VerifiedUser verifiedUser = user.get();
+                    log.info(
+                        "Successful login for user: '{}' with role: '{}' to path: '{}', with token: '{}'",
+                        verifiedUser.userId(),
+                        verifiedUser.role(),
+                        path,
+                        token
+                    );
+                    ServerWebExchange exchangeWithUserId = exchange.mutate().request(withUserHeaders(verifiedUser)).build();
                     return Optional.of(exchangeWithUserId);
                 })
             )
