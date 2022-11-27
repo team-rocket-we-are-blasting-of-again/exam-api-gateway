@@ -6,7 +6,6 @@ import com.teamrocket.VerifyUserResponse;
 import com.teamrocket.core.dto.RoutePathDto;
 import com.teamrocket.core.security.util.VerifiedUser;
 import io.grpc.StatusRuntimeException;
-import io.grpc.stub.StreamObserver;
 import java.util.Optional;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
