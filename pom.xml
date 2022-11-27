@@ -13,7 +13,7 @@
 
     <groupId>com.teamrocket</groupId>
     <artifactId>gateway</artifactId>
-    <version>0.0.3-SNAPSHOT</version>
+    <version>0.0.4-SNAPSHOT</version>
     <name>gateway</name>
     <description>API gateway for all microservices</description>
 
