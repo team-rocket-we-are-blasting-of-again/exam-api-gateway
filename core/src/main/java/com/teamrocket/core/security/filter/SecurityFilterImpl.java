@@ -43,9 +43,6 @@ public class SecurityFilterImpl {
             .build()
             .getHeaders();
 
-        String requestPath = exchange.getRequest().getPath().pathWithinApplication().value();
-        log.info("Request: '{}'", requestPath);
-
         RouteRequestMatcher routeRequestMatcher = new RouteRequestMatcher(exchange);
         return getAuthHeader(headers)
             // If the request does not require a token it will go through but if it does the token is invalid

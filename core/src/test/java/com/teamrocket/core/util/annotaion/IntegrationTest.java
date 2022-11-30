@@ -13,7 +13,10 @@ import org.springframework.test.context.ActiveProfiles;
 @Tag("integration")
 @ActiveProfiles("integration")
 @ExtendWith(FlywayMigrateJUnit.class)
-@SpringBootTest
+@SpringBootTest(
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+    properties = "server.port=0"
+)
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IntegrationTest {
