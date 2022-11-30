@@ -33,11 +33,11 @@ services:
     networks:
       gateway:
   gateway:
+    container_name: gateway
     depends_on:
       - kafka
       - zookeeper
       - gateway-postgres
-    container_name: gateway
     image: tobiaszimmer/exam-api-gateway:${GATEWAY_TAG}
     ports:
       - "8080:8080"

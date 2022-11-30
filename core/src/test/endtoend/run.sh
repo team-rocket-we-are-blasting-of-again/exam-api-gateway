@@ -6,11 +6,11 @@ script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 start() {
     docker network create gateway
     docker compose -f "$script_dir/test-env.docker-compose.yaml" up -d --build
-    sleep 10
+    sleep 15
     docker compose -f "$1" up -d --build
 
     # Wait for all the environment to be ready
-    sleep 10
+    sleep 15
 }
 
 stop() {

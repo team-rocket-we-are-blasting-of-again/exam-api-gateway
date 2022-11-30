@@ -18,4 +18,5 @@ public class SecurityConfig {
             .cors().disable()
             .build();
     }
+
 }
