@@ -31,7 +31,7 @@ jobs:
       - name: Setup variables
         run: |
           sudo apt install libxml-xpath-perl -y
-          version=$(. get_xpath_value.sh 'pom.xml' 'project/version' | awk '{print tolower($0)}')
+          version=$(. scripts/get_xpath_value.sh 'pom.xml' 'project/version' | awk '{print tolower($0)}')
           lower_case_image=$(echo $IMAGE_NAME | awk '{print tolower($0)}')
           branch_name=$(echo $GITHUB_REF | cut -d'/' -f 3 | tr / -)
           image="$lower_case_image:$branch_name-$version"
@@ -45,9 +45,9 @@ jobs:
       - name: Build images
         shell: bash
         run: |
-          core_version=$(. get_xpath_value.sh 'core/pom.xml' 'project/version')
-          core_name=$(. get_xpath_value.sh 'core/pom.xml' 'project/name')
-          jar_file="core/target/$core_name-$core-version.jar"
+          core_version=$(. scripts/get_xpath_value.sh 'core/pom.xml' 'project/version')
+          core_name=$(. scripts/get_xpath_value.sh 'core/pom.xml' 'project/name')
+          jar_file="core/target/$core_name-$core_version.jar"
           docker build --build-arg jar_file=$jar_file --tag "$image" .
 
       - name: Run End To End tests
