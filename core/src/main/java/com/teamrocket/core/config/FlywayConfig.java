@@ -18,10 +18,14 @@ public class FlywayConfig {
     @Value("${spring.flyway.password}")
     private String flywayPassword;
 
+    @Value("${spring.flyway.clean-disabled}")
+    private boolean cleanDisabled;
+
     @Bean(initMethod = "migrate")
     public Flyway flyway() {
         FluentConfiguration configuration = Flyway
             .configure()
+            .cleanDisabled(cleanDisabled)
             .dataSource(flywayUrl, flywayUser, flywayPassword);
 
         return new Flyway(configuration);
