@@ -22,13 +22,13 @@ jobs:
       - name: Echo Jacoco report
         id: jacoco
         run: |
-          report=$(cat target/site/jacoco/index.html)
+          report=$(cat core/target/site/jacoco/index.html)
           echo "report=$report" >> $GITHUB_OUTPUT
 
       - name: Echo PMD report
         id: pmd
         run: |
-          report=$(cat target/site/pmd.html)
+          report=$(cat core/target/site/pmd.html)
           echo "report<<EOF" >> $GITHUB_OUTPUT
           echo "$report" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
