@@ -2,6 +2,7 @@ package com.teamrocket.core.config;
 
 import com.teamrocket.core.dto.GatewayRouteDto;
 import com.teamrocket.core.security.filter.GatewaySecurityFilter;
+import com.teamrocket.core.security.filter.IPFilter;
 import com.teamrocket.core.security.filter.RewritePathFilter;
 import com.teamrocket.core.security.filter.RewritePathFilter.Config;
 import com.teamrocket.core.service.GatewayRouteService;
@@ -26,6 +27,7 @@ public class RouteConfig implements RouteLocator {
     private final RouteLocatorBuilder routeLocatorBuilder;
     private final GatewaySecurityFilter securityFilter;
     private final RewritePathFilter rewritePathFilter;
+    private final IPFilter ipFilter;
 
     @Override
     public Flux<Route> getRoutes() {
@@ -47,6 +49,7 @@ public class RouteConfig implements RouteLocator {
                 return predicateSpec
                     .path(requestPath)
                     .filters(f -> f
+                        .filter(ipFilter)
                         .filter(securityFilter)
                         .filter(rewritePathFilter.apply(new Config(requestPath)))
                     )
