@@ -3,7 +3,8 @@
 customer_registration_request() {
     basic_auth=$(echo -n "bob:thebuilder" | base64)
 
-    curl --request GET \
+    curl --request POST \
+        -i \
         --url http://localhost:8080/customer/api/v1/customers \
         --header "Authorization: Basic $basic_auth" \
         --header 'Content-Type: application/json' \
@@ -14,10 +15,11 @@ customer_registration_request() {
 sleep 10
 
 customer_registration_request | {
-    read -r http_code
-    echo "response body: $http_code"
-    case $http_code in
-    *200*)
+    read -r response_body
+    echo "response body: $response_body"
+    status_code=$(echo "$response_body" | grep HTTP |  awk '{print $2}')
+    case $status_code in
+    *401*)
         exit 0
         ;;
     *)
