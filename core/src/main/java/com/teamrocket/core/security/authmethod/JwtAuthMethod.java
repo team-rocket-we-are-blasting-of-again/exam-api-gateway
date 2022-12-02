@@ -29,7 +29,7 @@ public class JwtAuthMethod implements AuthMethod {
             return routePathDto.getRolesAllowed()
                 .stream()
                 .filter(role -> role.toString().equals(verifyUserResponse.getUserRole()))
-                .map(role -> new VerifiedUser(verifyUserResponse.getUserId(), role.toString()))
+                .map(role -> new VerifiedUser(verifyUserResponse.getRoleId(), role.toString()))
                 .findFirst();
 
         } catch (StatusRuntimeException e) {

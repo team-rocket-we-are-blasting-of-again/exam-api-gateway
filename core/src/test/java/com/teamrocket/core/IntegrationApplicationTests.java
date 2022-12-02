@@ -1,9 +1,9 @@
 package com.teamrocket.core;
 
+import com.teamrocket.core.util.annotaion.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
+@IntegrationTest
 class IntegrationApplicationTests {
 
     @Test

@@ -1,5 +1,9 @@
 FROM openjdk:17-bullseye
 WORKDIR /app
-COPY core/target/*.jar /app/application.jar
+
+ARG jar_file
+
+COPY $jar_file /app/application.jar
+
 
 CMD [ "java", "-jar", "/app/application.jar" ]

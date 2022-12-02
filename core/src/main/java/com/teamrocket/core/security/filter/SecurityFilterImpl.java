@@ -39,12 +39,12 @@ public class SecurityFilterImpl {
         // Make sure we don't have some cheeky hackers using a random user id
         HttpHeaders headers = exchange.getRequest()
             .mutate()
-            .headers(httpHeaders -> httpHeaders.remove(USER_HEADER).remove(ROLE_HEADER))
+            .headers(httpHeaders -> {
+                httpHeaders.remove(USER_HEADER);
+                httpHeaders.remove(ROLE_HEADER);
+            })
             .build()
             .getHeaders();
-
-        String requestPath = exchange.getRequest().getPath().pathWithinApplication().value();
-        log.info("Request: '{}'", requestPath);
 
         RouteRequestMatcher routeRequestMatcher = new RouteRequestMatcher(exchange);
         return getAuthHeader(headers)

@@ -81,40 +81,42 @@ public class GatewayRouteServiceImpl implements GatewayRouteService {
                 .collectList()
                 .flatMap(unused -> Mono.just(gatewayRoute)))
             .zipWith(Mono.just(gatewayRouteDto.getRoutePathDto()))
-            .flatMapMany(objects -> {
-                GatewayRoute gatewayRoute = objects.getT1();
-                List<RoutePathDto> routePathDtos = objects.getT2();
-                Flux<Boolean> voidFlux = Flux.empty();
-                for (RoutePathDto routePathDto : routePathDtos) {
-                    Flux<Boolean> result = routePathService.createRoutePath(gatewayRoute, routePathDto)
-                        .zipWith(Mono.just(routePathDto))
-                        .map(tuple2 -> tuple2.getT2()
-                            .getRolesAllowed()
-                            .stream()
-                            .map(role -> appRoleRepository.findAppRoleByRole(role.toString())
-                                .zipWith(Mono.just(tuple2.getT1())))
-                            .collect(Collectors.toList()))
-                        .flatMapMany(Flux::fromIterable)
-                        .flatMap(appRoleMono -> appRoleMono)
-                        .collectList()
-                        .flatMapMany(tuple2List -> {
-                            if (tuple2List.isEmpty()) {
-                                return Mono.just(true);
-                            }
-                            RoutePath routePath = tuple2List.get(0).getT2();
-                            List<AppRole> appRoles = tuple2List
-                                .stream()
-                                .map(Tuple2::getT1)
-                                .collect(Collectors.toList());
-                            return routePathAppRoleService.updateOrCreateRoutePathAppRole(routePath, appRoles);
-                        })
-                        .map(o -> o)
-                        .flatMap(unused -> Mono.just(true));
+            .flatMapMany(this::createGatewayRoute);
+    }
 
-                    voidFlux = Flux.concat(voidFlux, result);
-                }
-                return voidFlux;
-            });
+    private Flux<Boolean> createGatewayRoute(Tuple2<GatewayRoute, List<RoutePathDto>> objects) {
+        GatewayRoute gatewayRoute = objects.getT1();
+        List<RoutePathDto> routePathDtos = objects.getT2();
+        Flux<Boolean> voidFlux = Flux.empty();
+        for (RoutePathDto routePathDto : routePathDtos) {
+            Flux<Boolean> result = routePathService.createRoutePath(gatewayRoute, routePathDto)
+                .zipWith(Mono.just(routePathDto))
+                .map(tuple2 -> tuple2.getT2()
+                    .getRolesAllowed()
+                    .stream()
+                    .map(role -> appRoleRepository.findAppRoleByRole(role.toString())
+                        .zipWith(Mono.just(tuple2.getT1())))
+                    .collect(Collectors.toList()))
+                .flatMapMany(Flux::fromIterable)
+                .flatMap(appRoleMono -> appRoleMono)
+                .collectList()
+                .flatMapMany(tuple2List -> {
+                    if (tuple2List.isEmpty()) {
+                        return Mono.just(true);
+                    }
+                    RoutePath routePath = tuple2List.get(0).getT2();
+                    List<AppRole> appRoles = tuple2List
+                        .stream()
+                        .map(Tuple2::getT1)
+                        .collect(Collectors.toList());
+                    return routePathAppRoleService.updateOrCreateRoutePathAppRole(routePath, appRoles);
+                })
+                .map(o -> o)
+                .flatMap(unused -> Mono.just(true));
+
+            voidFlux = Flux.concat(voidFlux, result);
+        }
+        return voidFlux;
     }
 
     private Mono<GatewayRoute> updateOrCreateGatewayRoute(GatewayRouteDto gatewayRouteDto) {
