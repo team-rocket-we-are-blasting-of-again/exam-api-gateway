@@ -1,12 +1,13 @@
 package com.teamrocket.core.security.authmethod;
 
 import static com.teamrocket.core.enums.AuthenticationMethod.NONE;
+import static java.util.Objects.nonNull;
 
-import com.teamrocket.core.security.util.RouteRequestMatcher;
-import com.teamrocket.core.security.util.AuthStatus;
-import com.teamrocket.core.security.util.FoundAuthRoute;
 import com.teamrocket.core.dto.GatewayRouteDto;
 import com.teamrocket.core.dto.RoutePathDto;
+import com.teamrocket.core.security.util.AuthStatus;
+import com.teamrocket.core.security.util.FoundAuthRoute;
+import com.teamrocket.core.security.util.RouteRequestMatcher;
 import com.teamrocket.core.security.util.VerifiedUser;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,7 @@ public interface AuthMethod {
 
         for (RoutePathDto routePath : routePathDtoList) {
             Mono<FoundAuthRoute> foundAuthRouteMono = routeRequestMatcher
-                .matches(routePath.getPath())
+                .matches(routePath.getPath(), routePath.getHttpMethod())
                 .zipWith(Mono.just(routePath))
                 .map(objects -> {
                     boolean matched = objects.getT1();
