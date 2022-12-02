@@ -33,6 +33,7 @@ public class RoutePathDto {
             .id(routePath.getId())
             .path(routePath.getPath())
             .rolesAllowed(roles)
+            .httpMethod(routePath.getHttpMethod())
             .method(AuthenticationMethod.valueOf(routePath.getMethod()))
             .build();
     }

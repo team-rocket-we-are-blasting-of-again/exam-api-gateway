@@ -23,3 +23,4 @@ VALUES ('/gateway/fallback/catch-all-fallback', 'NONE', 1);
 
 INSERT INTO route_path_app_role (route_path_id, app_role_id)
 VALUES (3, 4)
+

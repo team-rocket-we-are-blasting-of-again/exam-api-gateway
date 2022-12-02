@@ -22,6 +22,7 @@ public class RoutePathService {
         return RoutePath.builder()
             .gatewayRouteId(gatewayRoute.getId())
             .path(routePathDto.getPath())
+            .httpMethod(routePathDto.getHttpMethod())
             .method(routePathDto.getMethod().toString())
             .build();
     }
