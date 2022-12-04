@@ -34,3 +34,4 @@ services:
 
 networks:
   gateway:
+    external: true

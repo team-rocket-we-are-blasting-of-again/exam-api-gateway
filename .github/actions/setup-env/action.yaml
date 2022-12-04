@@ -8,8 +8,10 @@ runs:
     - name: Setup environment
       shell: bash
       run: |
+        docker network create gateway
         docker-compose up -d
         docker-compose -f kafka.docker-compose.yaml up -d
+        docker-compose -f auth.docker-compose.yaml up -d
         sleep 5
 
     - name: Set up JDK 17

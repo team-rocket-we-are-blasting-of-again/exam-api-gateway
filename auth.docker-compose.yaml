@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  auth-service:
+    container_name: auth-service
+    image: tobiaszimmer/exam_auth_service:feat-0.1.0
+    ports:
+      - "8888:8080"
+      - "50051:50051"
+    environment:
+      POSTGRES_HOST: auth-postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DATABASE: postgres
+      TOKEN_DURATION_HOURS: 12
+  auth-postgres:
+    container_name: auth-postgres
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+networks:
+  gateway:
+    external: true
