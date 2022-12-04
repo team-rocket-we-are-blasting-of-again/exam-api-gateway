@@ -14,12 +14,16 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DATABASE: postgres
       TOKEN_DURATION_HOURS: 12
+    networks:
+      gateway:
   auth-postgres:
     container_name: auth-postgres
     image: postgres:latest
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+    networks:
+      gateway:
 
 networks:
   gateway:
