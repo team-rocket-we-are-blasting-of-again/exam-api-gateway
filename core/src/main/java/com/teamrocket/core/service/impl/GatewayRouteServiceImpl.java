@@ -154,7 +154,7 @@ public class GatewayRouteServiceImpl implements GatewayRouteService {
                 List<GatewayRouteDto> routeDtos = o.getT1();
                 for (GatewayRouteDto routeDto : routeDtos) {
                     RouteRequestMatcher matcher = o.getT2();
-                    Mono<Tuple2<Boolean, GatewayRouteDto>> matchesTuple = matcher.matches(routeDto.getRequestPath())
+                    Mono<Tuple2<Boolean, GatewayRouteDto>> matchesTuple = matcher.matches(routeDto.getRequestPath(), null)
                         .map(aBoolean -> Tuples.of(aBoolean, routeDto));
                     routeFlux = Flux.concat(routeFlux, matchesTuple);
                 }

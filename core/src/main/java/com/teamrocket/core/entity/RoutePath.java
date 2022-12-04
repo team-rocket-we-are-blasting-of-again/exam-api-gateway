@@ -27,6 +27,9 @@ public class RoutePath {
     @Column("method")
     private String method;
 
+    @Column("http_method")
+    private String httpMethod;
+
     @Column("gateway_route_id")
     private Long gatewayRouteId;
 

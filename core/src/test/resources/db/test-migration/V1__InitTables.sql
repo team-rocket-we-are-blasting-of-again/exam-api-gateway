@@ -24,3 +24,4 @@ CREATE TABLE IF NOT EXISTS route_path_app_role (
     FOREIGN KEY (route_path_id) REFERENCES route_path (id) ON DELETE CASCADE,
     FOREIGN KEY (app_role_id) REFERENCES app_role (id)
 );
+

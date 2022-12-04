@@ -16,7 +16,9 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 import reactor.core.publisher.Flux;
 
 public class GatewayRoutesDef {
@@ -31,6 +33,9 @@ public class GatewayRoutesDef {
     private ObjectMapper objectMapper;
 
     private GatewayRouteDto gatewayRoute;
+
+    private String routeForGetRequests;
+    private ResponseSpec requestWithPost;
 
     @Given("a route with the path {string}")
     public void aRouteWithThePath(String path) {
@@ -78,5 +83,24 @@ public class GatewayRoutesDef {
             .toList();
 
         assertThat(gatewayRouteDtos.size()).isEqualTo(1);
+    }
+
+    @Given("a route which is only allowed to do GET requests")
+    public void aRouteWhichIsOnlyAllowedToDoRequests() {
+        routeForGetRequests = "/gateway/route";
+    }
+
+    @When("a request is done with the method POST")
+    public void aRequestIsDoneWithTheMethod() {
+        requestWithPost = webTestClient.post()
+            .uri(routeForGetRequests)
+            .exchange();
+    }
+
+    @Then("the status code should be not found")
+    public void theStatusCodeShouldBe() {
+        requestWithPost
+            .expectStatus()
+            .isEqualTo(HttpStatus.NOT_FOUND);
     }
 }

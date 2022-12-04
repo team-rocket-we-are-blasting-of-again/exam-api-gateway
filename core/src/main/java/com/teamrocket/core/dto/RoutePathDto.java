@@ -22,6 +22,7 @@ public class RoutePathDto {
     private String path;
     private AuthenticationMethod method;
     private List<Role> rolesAllowed;
+    private String httpMethod;
 
     public static RoutePathDto fromEntity(RoutePath routePath, List<AppRole> appRoles) {
         List<Role> roles = appRoles.stream()
@@ -32,9 +33,9 @@ public class RoutePathDto {
             .id(routePath.getId())
             .path(routePath.getPath())
             .rolesAllowed(roles)
+            .httpMethod(routePath.getHttpMethod())
             .method(AuthenticationMethod.valueOf(routePath.getMethod()))
             .build();
     }
-
 
 }
