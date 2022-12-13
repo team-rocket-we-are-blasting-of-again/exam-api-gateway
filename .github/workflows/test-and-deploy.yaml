@@ -31,32 +31,40 @@ jobs:
       - name: Setup variables
         run: |
           sudo apt install libxml-xpath-perl -y
-          get_xpath_value() {
-            xml=$1
-            path=$2
-            if [ -f $xml ]; then
-              value=$(xpath -e $path $xml | perl -pe 's/^.+?\>//; s/\<.+?$//;' | awk '{print tolower($0)}')
-              echo -n $value
-            else
-              echo 'Invalid xml file "$xml"!'
-              exit 1;
-            fi
-          }
-          pom_xml='pom.xml'
-          version=$(get_xpath_value $pom_xml 'project/version')
+          version=$(. scripts/get_xpath_value.sh 'pom.xml' 'project/version' | awk '{print tolower($0)}')
           lower_case_image=$(echo $IMAGE_NAME | awk '{print tolower($0)}')
+          branch_name=$(echo $GITHUB_REF | cut -d'/' -f 3 | tr / -)
+          image="$lower_case_image:$branch_name-$version"
           echo "project_version=$version" >> $GITHUB_ENV
           echo "lower_case_image=$lower_case_image" >> $GITHUB_ENV
-          echo "branch_name=$(echo $GITHUB_REF | cut -d'/' -f 3 | tr / -)" >> $GITHUB_ENV
+          echo "branch_name=$branch_name" >> $GITHUB_ENV
+          echo "image=$image" >> $GITHUB_ENV
         env:
           IMAGE_NAME: ${{ env.DOCKER_USERNAME }}/${{ github.event.repository.name }}
+
+      - name: Build images
+        shell: bash
+        run: |
+          core_version=$(. scripts/get_xpath_value.sh 'core/pom.xml' 'project/version')
+          core_name=$(. scripts/get_xpath_value.sh 'core/pom.xml' 'project/name')
+          jar_file="core/target/$core_name-$core_version.jar"
+          docker build --build-arg jar_file=$jar_file --tag "$image" .
+
+      - name: Run End To End tests
+        shell: bash
+        run: |
+          docker compose down
+          docker compose -f auth.docker-compose.yaml down
+          docker compose -f kafka.docker-compose.yaml down
+          docker network rm gateway
+          . core/src/test/endtoend/run.sh
+        env:
+          GATEWAY_TAG: ${{ env.branch_name }}-${{ env.project_version }}
 
       - name: Deploy to dockerhub
         if: ${{ github.event_name != 'pull_request' }}
         run: |
           echo "$DOCKER_PASSWORD" | docker login --username $DOCKER_USERNAME --password-stdin
-          image="$lower_case_image:$branch_name-$project_version"
-          docker build --tag "$image" .
           docker push "$image"
         env:
           DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
@@ -69,5 +77,5 @@ jobs:
         with:
           destination_container_repo: ${{ env.lower_case_image }}
           provider: dockerhub
-          short_description: "Awesome Microservice"
+          short_description: "Gateway used for exposing APIs"
           readme_file: "DOCKER_README.md"

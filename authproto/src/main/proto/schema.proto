@@ -1,0 +1,39 @@
+syntax= "proto3";
+
+package com.teamrocket;
+
+option java_multiple_files = true;
+
+service Verify {
+  rpc VerifyUser (VerifyUserRequest) returns (VerifyUserResponse);
+}
+
+service User {
+  rpc createUser (CreateUserRequest) returns (CreateUserResponse);
+}
+
+message VerifyUserRequest {
+  string jwt = 1;
+}
+
+message VerifyUserResponse {
+  int32 roleId = 2;
+  string userRole = 3;
+}
+
+message CreateUserRequest {
+  Role role = 1;
+  int32 role_id = 2;
+  string email = 3;
+  string password = 4;
+}
+
+message CreateUserResponse {
+  int32 id = 1;
+}
+
+enum Role {
+  CUSTOMER = 0;
+  COURIER = 1;
+  RESTAURANT = 2;
+}
