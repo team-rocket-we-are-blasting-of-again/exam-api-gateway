@@ -5,11 +5,11 @@
 	<parent>
 		<artifactId>gateway</artifactId>
 		<groupId>com.teamrocket</groupId>
-		<version>0.0.4-SNAPSHOT</version>
+		<version>1.0.0-RELEASE</version>
 	</parent>
 
 	<artifactId>core</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>1.0.0-RELEASE</version>
 	<name>core</name>
 	<description>core</description>
 
@@ -49,7 +49,7 @@
 		<dependency>
 			<groupId>com.teamrocket</groupId>
 			<artifactId>authproto</artifactId>
-			<version>0.0.4-SNAPSHOT</version>
+			<version>1.0.0-RELEASE</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

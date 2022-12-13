@@ -5,10 +5,10 @@
 	<parent>
 		<artifactId>gateway</artifactId>
 		<groupId>com.teamrocket</groupId>
-		<version>0.0.4-SNAPSHOT</version>
+		<version>1.0.0-RELEASE</version>
 	</parent>
 	<artifactId>authproto</artifactId>
-	<version>0.0.4-SNAPSHOT</version>
+	<version>1.0.0-RELEASE</version>
 	<name>authproto</name>
 	<description>authproto</description>
 
