@@ -29,7 +29,7 @@ import reactor.util.function.Tuple2;
 @Slf4j
 public class SecurityFilterImpl {
 
-    private static final String USER_HEADER = "user_id";
+    private static final String USER_HEADER = "role_id";
     private static final String ROLE_HEADER = "role";
 
     private final List<AuthMethod> authMethods;
