@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtAuthMethod implements AuthMethod {
 
-    @GrpcClient("auth-client")
+    @GrpcClient("grpc-service")
     private VerifyGrpc.VerifyBlockingStub blockingAuthClient;
 
     @Override
