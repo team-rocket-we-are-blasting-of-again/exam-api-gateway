@@ -7,10 +7,12 @@ import com.teamrocket.core.dto.RoutePathDto;
 import com.teamrocket.core.security.util.VerifiedUser;
 import io.grpc.StatusRuntimeException;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class JwtAuthMethod implements AuthMethod {
 
     @GrpcClient("grpc-service")
@@ -26,13 +28,20 @@ public class JwtAuthMethod implements AuthMethod {
         try {
             VerifyUserResponse verifyUserResponse = blockingAuthClient.verifyUser(createRequest(token));
 
-            return routePathDto.getRolesAllowed()
+            Optional<VerifiedUser> result = routePathDto.getRolesAllowed()
                 .stream()
-                .filter(role -> role.toString().equals(verifyUserResponse.getUserRole()))
+                .filter(role -> role.toString().equalsIgnoreCase(verifyUserResponse.getUserRole()))
                 .map(role -> new VerifiedUser(verifyUserResponse.getRoleId(), role.toString()))
                 .findFirst();
 
+            if (result.isEmpty()) {
+                log.info("Invalid role for user: {} and role: {}", verifyUserResponse.getRoleId(), verifyUserResponse.getUserRole());
+            }
+
+            return result;
+
         } catch (StatusRuntimeException e) {
+            log.warn("Invalid login attempt", e);
             return Optional.empty();
         }
     }
