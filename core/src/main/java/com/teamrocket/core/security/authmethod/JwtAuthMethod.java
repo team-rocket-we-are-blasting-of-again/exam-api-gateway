@@ -1,10 +1,10 @@
 package com.teamrocket.core.security.authmethod;
 
-import com.teamrocket.VerifyGrpc;
-import com.teamrocket.VerifyUserRequest;
-import com.teamrocket.VerifyUserResponse;
 import com.teamrocket.core.dto.RoutePathDto;
 import com.teamrocket.core.security.util.VerifiedUser;
+import com.teamrocket.proto.VerifyGrpc;
+import com.teamrocket.proto.VerifyUserRequest;
+import com.teamrocket.proto.VerifyUserResponse;
 import io.grpc.StatusRuntimeException;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +35,8 @@ public class JwtAuthMethod implements AuthMethod {
                 .findFirst();
 
             if (result.isEmpty()) {
-                log.info("Invalid role for user: {} and role: {}", verifyUserResponse.getRoleId(), verifyUserResponse.getUserRole());
+                log.info("Invalid role for user: {} and role: {}", verifyUserResponse.getRoleId(),
+                    verifyUserResponse.getUserRole());
             }
 
             return result;

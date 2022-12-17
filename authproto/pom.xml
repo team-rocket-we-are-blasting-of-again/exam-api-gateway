@@ -8,7 +8,7 @@
 		<version>1.0.3-RELEASE</version>
 	</parent>
 	<artifactId>authproto</artifactId>
-	<version>1.0.3-RELEASE</version>
+	<version>1.0.4-RELEASE</version>
 	<name>authproto</name>
 	<description>authproto</description>
 
